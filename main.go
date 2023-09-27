@@ -1,28 +1,22 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"net/http"
+	"os"
+	"os/signal"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/varmaexe/orders-api/application"
 )
 
 func main() {
-	router := chi.NewRouter()
+	app := application.New()
 
-	router.Get("/hello", basicHandler)
-	server := &http.Server{
-		Addr:    ":3000",
-		Handler: router,
-	}
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
 
-	err := server.ListenAndServe()
-
+	err := app.Start(ctx)
 	if err != nil {
-		fmt.Println("Failed to listen to server", err)
+		fmt.Println("failed to start server", err)
 	}
-}
-
-func basicHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello, world!\n"))
 }
